@@ -1,7 +1,6 @@
 package ru.netology.servlet;
 
 import ru.netology.controller.PostController;
-
 import ru.netology.repository.PostRepository;
 import ru.netology.service.PostService;
 
@@ -10,6 +9,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class MainServlet extends HttpServlet {
+
+    private static final String GET_METHOD = "GET";
+    private static final String POST_METHOD = "POST";
+    private static final String DELETE_METHOD = "DELETE";
+    private static final String API_POSTS_PATH = "/api/posts";
+    private static final String API_POSTS_ID_REGEX = "/api/posts/\\d+";
 
     private PostController controller;
 
@@ -22,34 +27,33 @@ public class MainServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) {
-
         try {
             final var path = req.getRequestURI();
             final var method = req.getMethod();
 
-            String GET_METHOD = "GET";
-            if (method.equals(GET_METHOD) && path.equals("/api/posts")) {
+            if (method.equals(GET_METHOD) && path.equals(API_POSTS_PATH)) {
                 controller.all(resp);
                 return;
             }
-            if (method.equals(GET_METHOD) && path.matches("/api/posts/\\d+")) {
-                // easy way
+
+            if (method.equals(GET_METHOD) && path.matches(API_POSTS_ID_REGEX)) {
                 final var id = parseId(path);
                 controller.getById(id, resp);
                 return;
             }
-            String POST_METHOD = "POST";
-            if (method.equals(POST_METHOD) && path.equals("/api/posts")) {
+
+            // Обработка POST /api/posts
+            if (method.equals(POST_METHOD) && path.equals(API_POSTS_PATH)) {
                 controller.save(req.getReader(), resp);
                 return;
             }
-            String DELETE_METHOD = "DELETE";
-            if (method.equals(DELETE_METHOD) && path.matches("/api/posts/\\d+")) {
-                // easy way
+
+            if (method.equals(DELETE_METHOD) && path.matches(API_POSTS_ID_REGEX)) {
                 final var id = parseId(path);
                 controller.removeById(id, resp);
                 return;
             }
+
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } catch (Exception e) {
             e.printStackTrace();
