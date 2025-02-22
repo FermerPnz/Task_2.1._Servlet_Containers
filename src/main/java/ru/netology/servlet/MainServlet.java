@@ -1,15 +1,17 @@
 package ru.netology.servlet;
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Controller;
 import ru.netology.controller.PostController;
-import ru.netology.repository.PostRepository;
 import ru.netology.service.PostService;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+@Controller
 public class MainServlet extends HttpServlet {
 
+    // Выносим строковые константы в поля класса
     private static final String GET_METHOD = "GET";
     private static final String POST_METHOD = "POST";
     private static final String DELETE_METHOD = "DELETE";
@@ -20,9 +22,8 @@ public class MainServlet extends HttpServlet {
 
     @Override
     public void init() {
-        final var repository = new PostRepository();
-        final var service = new PostService(repository);
-        controller = new PostController(service);
+        final var context = new AnnotationConfigApplicationContext(ru.netology.service.PostService.class);
+        controller = context.getBean(PostController.class);
     }
 
     @Override
@@ -42,7 +43,6 @@ public class MainServlet extends HttpServlet {
                 return;
             }
 
-            // Обработка POST /api/posts
             if (method.equals(POST_METHOD) && path.equals(API_POSTS_PATH)) {
                 controller.save(req.getReader(), resp);
                 return;
@@ -61,6 +61,7 @@ public class MainServlet extends HttpServlet {
         }
     }
 
+    // Метод для извлечения ID из пути
     public long parseId(String path) {
         return Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
     }
